@@ -13,3 +13,12 @@
 - **Tarea:** contrastar la instrucción de configuración de un backend alternativo con el archivo de ejemplo, el consumidor frontend y el proxy; completar la evidencia de la fila correspondiente.
 - **Regla aplicada:** `documentation.md`; confirmar archivos y variables contra el código, y distinguir la inspección estática de una prueba en ejecución.
 - **Resultado:** satisfactorio para la revisión estática: el archivo de ejemplo, la variable y su lectura están presentes, y el proxy `/api` está configurado. El cambio de backend no se probó en ejecución.
+
+## Revisión humana y validación
+
+- **Contenido generado con ayuda de IA:** Esta sección y la propuesta anterior fueron redactadas con ayuda de IA.
+- **Comprobación estática:** Se contrastaron afirmaciones sobre el consumo de `/api/metrics`, el período mostrado y la variable `VITE_API_BASE_URL` con el código. `frontend/.env.example` existe y está registrado en Git.
+- **Correcciones humanas:** El usuario está revisando la documentación y corrigiendo afirmaciones incorrectas del agente, incluida la afirmación previa de que faltaba `frontend/.env.example`. La revisión humana está en curso; esto no equivale a una aprobación final.
+- **Ejecución de servicios:** Se ejecutó correctamente `docker compose up -d`. Con `docker compose ps` se comprobó que frontend y backend estaban en estado `Up`, en los puertos 5173 y 8000.
+- **Verificación visual:** Se abrió correctamente el Dashboard Financiero desde el puerto 5173.
+- **Pruebas automatizadas:** No se han aportado resultados de suites de pruebas automatizadas; no se afirma que se hayan ejecutado.
