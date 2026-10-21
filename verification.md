@@ -1,4 +1,5 @@
-# Verificación del proyecto
+
+# Verificacion
 
 | Afirmación original | Archivos revisados | Resultado | Corrección |
 |---|---|---|---|
@@ -21,7 +22,9 @@
 - **Correcciones humanas:** El usuario está revisando la documentación y corrigiendo afirmaciones incorrectas del agente, incluida la afirmación previa de que faltaba `frontend/.env.example`. La revisión humana está en curso; esto no equivale a una aprobación final.
 - **Ejecución de servicios:** Se ejecutó correctamente `docker compose up -d`. Con `docker compose ps` se comprobó que frontend y backend estaban en estado `Up`, en los puertos 5173 y 8000.
 - **Verificación visual:** Se abrió correctamente el Dashboard Financiero desde el puerto 5173.
-- **Pruebas automatizadas:** No se han aportado resultados de suites de pruebas automatizadas; no se afirma que se hayan ejecutado.## Verificación del ejercicio SDD — Dashboard financiero
+- **Pruebas automatizadas:** No se han aportado resultados de suites de pruebas automatizadas; no se afirma que se hayan ejecutado.
+
+## Verificación del ejercicio SDD — Dashboard financiero
 
 ### Estructura del proyecto y especificaciones
 
@@ -42,11 +45,11 @@ La existencia actual de los archivos se comprobó en el árbol. `api-types.ts`, 
 
 ### Fase 1 — Exploración de la API
 
-Se consultó en ejecución `http://localhost:8000/openapi.json` mediante Python y `urllib` para `/api/metrics/alerts`, `/api/metrics/categories/top`, `/api/metrics/facets` y `/api/metrics/summary`. El contrato de `/api/metrics` se inspeccionó en código y pruebas; no se conserva una consulta OpenAPI de esa ruta. Consultar OpenAPI verifica el contrato servido, no equivale a ejecutar cada endpoint y comprobar sus datos de respuesta.
+Se consultó en ejecución `http://localhost:8000/openapi.json` mediante Python y `urllib` para `/api/metrics/alerts`, `/api/metrics/categories/top`, `/api/metrics/facets` y `/api/metrics/summary`. El 21/10/2026 se volvió a consultar el documento OpenAPI y se obtuvo `HTTP 200 OK`; su esquema de `GET /api/metrics` declara los parámetros opcionales `start_date`, `end_date`, `category` y `operation_type`, y la respuesta `FinancialMovement[]`. Consultar OpenAPI verifica el contrato servido, pero no equivale a ejecutar cada endpoint y comprobar sus datos de respuesta ni demuestra que se hayan ejecutado pruebas funcionales o automatizadas.
 
 | Endpoint | Funcionalidad y parámetros | Respuesta | Evidencia y diferencias respecto al PM |
 |---|---|---|---|
-| `GET /api/metrics` | Movimientos filtrados. En código: `start_date`, `end_date`, `category` y `operation_type`, todos opcionales; las fechas son `date`, categoría admite `suppliers`, `sales`, `operational`, `administrative`, `others`, y operación admite `income`/`outcome`. | `FinancialMovement[]`: `create_date`, `amount`, `operation_type`, `category`, `business_type`. | Inspección de `backend/app/routes.py`; existe `test_metrics_endpoint_respects_date_filters` en `backend/tests/test_routes.py`, pero no se afirma que se ejecutara. OpenAPI de esta ruta no se consultó en la evidencia disponible. El frontend actual consulta `/api/metrics` sin parámetros (`frontend/src/App.tsx`). |
+| `GET /api/metrics` | Movimientos filtrados. En código y OpenAPI: `start_date`, `end_date`, `category` y `operation_type`, todos opcionales; las fechas son `date`, categoría admite `suppliers`, `sales`, `operational`, `administrative`, `others`, y operación admite `income`/`outcome`. | `FinancialMovement[]`: `create_date`, `amount`, `operation_type`, `category`, `business_type`. | OpenAPI consultado el 21/10/2026 con respuesta `HTTP 200 OK`; confirma el contrato, no la ejecución funcional de esta ruta. Inspección adicional de `backend/app/routes.py`; existe `test_metrics_endpoint_respects_date_filters` en `backend/tests/test_routes.py`, pero no se afirma que se ejecutara. El frontend actual consulta `/api/metrics` sin parámetros (`frontend/src/App.tsx`). |
 | `GET /api/metrics/facets` | Sin parámetros. | `MetricsFacets`: `operation_types[]`, `business_types[]`, `categories[]`, `min_date`, `max_date`; las fechas usan formato `date`. | OpenAPI, modelo y prueba existentes inspeccionados. Las categorías y los tipos de negocio son globales, no separados por grupo. |
 | `GET /api/metrics/alerts` | `threshold`: number, opcional, default `0.3`, mínimo `0`, sin máximo; `group_by`: `day`/`week`/`month`, default `month`; `start_date` y `end_date` fechas opcionales; `business_type`: `B2B`/`B2C`, opcional. | `MetricsAlert[]`; propiedades requeridas `period: string`, `outcome_total: number`, `baseline_average: number`, `increase_ratio: number`. | OpenAPI y código inspeccionados. Discrepa del PM: el backend usa media histórica acumulada y no impone el máximo `1.0` ni el mínimo `0.01`; filtra fechas antes de calcular el baseline. |
 | `GET /api/metrics/categories/top` | `operation_type`: `income`/`outcome`, opcional, default `outcome`; `limit`: integer entre 1 y 20, default `5`; fechas opcionales; `business_type`: `B2B`/`B2C`, opcional. | `TopCategoryItem[]`; propiedades requeridas `category`, `operation_type`, `total_amount`. | OpenAPI y código inspeccionados. Devuelve hasta `limit` resultados ordenados por importe descendente; no incluye porcentaje ni garantiza cinco categorías. La consulta de ingresos debe enviar `operation_type=income`. |
@@ -88,12 +91,12 @@ La comprobación cubre esos dos archivos de forma estricta, no la aplicación co
 
 | Comprobación | Comando o procedimiento | Resultado observado | Alcance y limitaciones |
 |---|---|---|---|
-| Inspección de contratos API | Consulta Python `urllib` a `http://localhost:8000/openapi.json`; lectura estática de rutas/modelos. | OpenAPI devolvió parámetros y esquemas de alerts, categories/top, facets y summary. | `/api/metrics` se inspeccionó estáticamente. OpenAPI no prueba resultados de negocio; no se afirma que cada endpoint se ejecutara con peticiones de datos. |
+| Inspección de contratos API | Consulta Python `urllib` a `http://localhost:8000/openapi.json`; lectura estática de rutas/modelos. | El 21/10/2026 OpenAPI devolvió `HTTP 200 OK`; se consultaron los parámetros y esquemas de `/api/metrics`, alerts, categories/top, facets y summary. | OpenAPI verifica contratos, no resultados de negocio; no se afirma que cada endpoint se ejecutara con peticiones de datos ni que se hayan ejecutado pruebas funcionales o automatizadas. |
 | Revisión de tipos | Lectura de `frontend/src/lib/financial-types.ts`, `api-types.ts` y `param-types.ts`. | Confirmadas las aliases compartidas y las declaraciones de los contratos del ejercicio. | Inspección estática; no valida toda la aplicación. |
 | Instalación de dependencias | `npm ci` desde `frontend` (resultado reportado durante el ejercicio). | Instalados 266 paquetes; npm notificó 13 vulnerabilidades. | No se ejecutó automáticamente `npm audit fix`; no se afirma que las vulnerabilidades se hayan corregido. |
 | Comprobación TypeScript del proyecto | `npx --no-install tsc --noEmit -p tsconfig.app.json` desde `frontend`. | Ejecutado correctamente. | Usa `tsconfig.app.json`, cuyo `include` solo contiene `src`; no comprueba archivos de `frontend/specs/`. |
 | Comprobación estricta TypeScript | Comando `npx --no-install tsc --ignoreConfig ...` desde `frontend`. | Reportada sin errores. | Solo `specs/api-types.ts` y `specs/param-types.ts`. |
-| Archivos y Git | Inspección de directorios; `git status --short` desde `frontend`. | Rama observada: `feature/frontend-specs`; salida: `?? specs/` y `?? ../specs/`. | El árbol no estaba limpio; esos directorios preexistentes se conservaron. No se hizo commit ni push. |
+| Archivos y Git | Inspección de directorios; `git status --short` desde `frontend`. | Rama observada: `feature/frontend-specs`; salida: `?? specs/` y `?? ../specs/`. | El árbol no estaba limpio en esa inspección; esos directorios preexistentes se conservaron. Desde entonces, la rama recibió un commit de avances y fue publicada en GitHub. |
 | Suites de pruebas | No hay comando ni salida de ejecución registrados en la evidencia disponible. | Sin resultado. | No se afirma que se ejecutaran pruebas unitarias, integración o interfaz. |
 
 Los resultados de `npm ci`, sus incidencias y la comprobación estricta se registran como resultados reportados durante el ejercicio; no se repitieron durante esta actualización documental.
@@ -112,13 +115,17 @@ Los resultados de `npm ci`, sus incidencias y la comprobación estricta se regis
 | Fase | Estado |
 |---|---|
 | Fase 1 — API | Investigación estática y OpenAPI realizada para las rutas indicadas; documentación de verificación añadida. Pruebas automatizadas no declaradas como ejecutadas. |
-| Fase 2 — Tipos | Contratos creados, revisados y validados técnicamente con la comprobación estricta individual; commit pendiente. |
+| Fase 2 — Tipos | Contratos creados, revisados y validados técnicamente con la comprobación estricta individual; la rama ya tiene un commit de avances y fue publicada en GitHub. |
 | Fase 3 — Componentes | `frontend/specs/components.md` documenta propuestas de las tres funcionalidades; revisión final y alineación con tipos pendientes. |
 | Fase 4 — README | `frontend/specs/README.md` pendiente y no existente. |
-| GitHub | Commits y publicación de la rama pendientes. |
+| GitHub | La rama `feature/frontend-specs` tiene un commit de avances y fue publicada en GitHub. |
 
 ### Datos pendientes de verificación
 
-- No se conserva consulta OpenAPI de `GET /api/metrics`; sus parámetros y respuesta se documentan según código inspeccionado.
+- El 21/10/2026 se consultó `http://localhost:8000/openapi.json` y se obtuvo `HTTP 200 OK`.
+- OpenAPI declara que `GET /api/metrics` acepta cuatro parámetros opcionales: `start_date`, `end_date`, `category` y `operation_type`; devuelve `FinancialMovement[]`.
+- OpenAPI verifica el contrato (parámetros y esquema de respuesta), pero no demuestra que se hayan ejecutado pruebas funcionales o automatizadas ni que se hayan comprobado los datos devueltos por la ruta.
 - No se ejecutaron durante esta actualización las suites de backend/frontend ni pruebas de interfaz.
 - Siguen pendientes la revisión humana de `components.md`, la aprobación de decisiones abiertas y la integración de funcionalidades en el frontend.
+
+# Verificación del proyecto
