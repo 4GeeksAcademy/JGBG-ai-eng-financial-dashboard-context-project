@@ -25,7 +25,7 @@ export interface AlertsParams extends DateRangeFilter {
 export interface TopCategoriesParams extends DateRangeFilter {
   /** Tipo de operación: income u outcome. Predeterminado real: outcome. */
   operation_type?: OperationType
-  /** Cantidad entera de resultados, entre 1 y 20. Predeterminado real: 5. */
+  /** TypeScript lo representa como number, pero la API requiere un entero entre 1 y 20. Predeterminado real: 5. */
   limit?: number
   /** Filtro opcional por tipo de negocio: B2B o B2C. */
   business_type?: BusinessType
